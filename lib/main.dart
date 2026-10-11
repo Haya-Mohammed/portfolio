@@ -9,16 +9,26 @@ void main() {
   runApp(const PortfolioApp());
 }
 
-class PortfolioApp extends StatelessWidget {
+class PortfolioApp extends StatefulWidget {
   const PortfolioApp({super.key});
 
   @override
+  State<PortfolioApp> createState() => _PortfolioAppState();
+}
+
+class _PortfolioAppState extends State<PortfolioApp> {
+  bool _isDark = false;
+
+  void _toggleTheme() => setState(() => _isDark = !_isDark);
+
+  @override
   Widget build(BuildContext context) {
+    Brand.isDark = _isDark;
     return MaterialApp(
-      title: 'Portfolio',
+      title: 'Haya Obaid | Mobile Application Developer',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
-      home: const HomeScreen(),
+      home: HomeScreen(isDark: _isDark, onToggleTheme: _toggleTheme),
       scrollBehavior: _SmoothScrollBehavior(),
     );
   }

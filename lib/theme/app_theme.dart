@@ -1,70 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class AppColors {
-  static const bg       = Color(0xFF0C0B09);
-  static const bg2      = Color(0xFF131210);
-  static const bg3      = Color(0xFF1A1814);
-  static const gold     = Color(0xFFC9A84C);
-  static const goldLight= Color(0xFFE8C97A);
-  static const goldDim  = Color(0xFF7A6430);
-  static const cream    = Color(0xFFF0E8D8);
-  static const textMain = Color(0xFFD4CFC6);
-  static const muted    = Color(0xFF7A7570);
-  static const border   = Color(0x26C9A84C); // ~15% gold
+class Brand {
+  static bool isDark = false;
+
+  static Color get charcoal =>
+      isDark ? const Color(0xFFF1ECE4) : const Color(0xFF272727);
+  static const mustard = Color(0xFFDCA028);
+  static Color get deepMustard => isDark ? mustard : const Color(0xFF7A5C0E);
+  static Color get ivory =>
+      isDark ? const Color(0xFF1F1E1B) : const Color(0xFFF1ECE4);
+  static Color get paper =>
+      isDark ? const Color(0xFF2A2926) : const Color(0xFFFAF8F3);
+  static Color get oatmeal =>
+      isDark ? const Color(0xFF35332F) : const Color(0xFFE3DCD2);
+  static Color get warmGray =>
+      isDark ? const Color(0xFF625C53) : const Color(0xFFCDC6BD);
+  static Color get muted =>
+      isDark ? const Color(0xFFC8BEB2) : const Color(0xFF59534D);
+  static const footer = Color(0xFF272727);
+  static const footerText = Color(0xFFF1ECE4);
 }
 
 class AppFonts {
-  static TextStyle serif({
-    double size = 16,
-    FontWeight weight = FontWeight.w300,
-    Color color = AppColors.cream,
-    FontStyle style = FontStyle.normal,
-    double? height,
-    double letterSpacing = -0.01,
-  }) =>
-      GoogleFonts.cormorantGaramond(
+  static TextStyle display({double size = 32, double height = 1.12}) =>
+      GoogleFonts.fraunces(
         fontSize: size,
-        fontWeight: weight,
-        color: color,
-        fontStyle: style,
+        fontWeight: FontWeight.w600,
         height: height,
-        letterSpacing: letterSpacing,
+        color: Brand.charcoal,
       );
 
-  static TextStyle mono({
-    double size = 11,
-    FontWeight weight = FontWeight.w300,
-    Color color = AppColors.muted,
-    double letterSpacing = 0.15,
-  }) =>
-      GoogleFonts.dmMono(
-        fontSize: size,
-        fontWeight: weight,
-        color: color,
-        letterSpacing: letterSpacing,
-      );
-
-  static TextStyle sans({
+  static TextStyle body({
     double size = 16,
-    FontWeight weight = FontWeight.w300,
-    Color color = AppColors.textMain,
-    double height = 1.8,
-  }) =>
-      GoogleFonts.outfit(
+    FontWeight weight = FontWeight.w500,
+    Color? color,
+    double height = 1.5,
+  }) => GoogleFonts.plusJakartaSans(
+    fontSize: size,
+    fontWeight: weight,
+    color: color ?? Brand.charcoal,
+    height: height,
+  );
+
+  static TextStyle mono({double size = 12, Color? color}) =>
+      GoogleFonts.jetBrainsMono(
         fontSize: size,
-        fontWeight: weight,
-        color: color,
-        height: height,
+        fontWeight: FontWeight.w500,
+        color: color ?? Brand.deepMustard,
+        letterSpacing: 1.3,
       );
 }
 
-ThemeData buildTheme() => ThemeData(
-  brightness: Brightness.dark,
-  scaffoldBackgroundColor: AppColors.bg,
-  colorScheme: const ColorScheme.dark(
-    surface: AppColors.bg,
-    primary: AppColors.gold,
-  ),
-  textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-);
+ThemeData buildTheme() {
+  final base = Brand.isDark ? ThemeData.dark() : ThemeData.light();
+  return base.copyWith(
+    scaffoldBackgroundColor: Brand.ivory,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Brand.mustard,
+      brightness: Brand.isDark ? Brightness.dark : Brightness.light,
+      primary: Brand.charcoal,
+      onPrimary: Brand.ivory,
+      surface: Brand.paper,
+      onSurface: Brand.charcoal,
+    ),
+    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: Brand.charcoal,
+        foregroundColor: Brand.ivory,
+        minimumSize: const Size(0, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Brand.charcoal,
+        minimumSize: const Size(0, 48),
+        side: BorderSide(color: Brand.charcoal),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    ),
+  );
+}

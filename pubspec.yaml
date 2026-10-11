@@ -1,5 +1,5 @@
 name: my_portfolio
-description: "A new Flutter project."
+description: "Haya Obaid's Flutter developer portfolio."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -13,6 +13,7 @@ dependencies:
   google_fonts: ^6.1.0
   flutter_animate: ^4.5.0
   url_launcher: ^6.3.0
+  web: ^1.1.1
   visibility_detector: ^0.4.0+2
   cupertino_icons: ^1.0.8
 
@@ -25,6 +26,10 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+
+  assets:
+    - assets/brand/haya-logo-original.png
+    - assets/projects/
 
   # assets:
   #   - images/a_dot_burr.jpeg
