@@ -23,7 +23,10 @@ class Section extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: shaded ? Brand.oatmeal : Brand.paper,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 84),
+      padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.sizeOf(context).width < 600 ? 20 : 48,
+        vertical: MediaQuery.sizeOf(context).width < 600 ? 58 : 84,
+      ),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1220),
@@ -32,7 +35,13 @@ class Section extends StatelessWidget {
             children: [
               eyebrow(label),
               const SizedBox(height: 15),
-              Text(title, style: AppFonts.display(size: 41, height: 1.15)),
+              Text(
+                title,
+                style: AppFonts.display(
+                  size: MediaQuery.sizeOf(context).width < 600 ? 34 : 41,
+                  height: 1.15,
+                ),
+              ),
               const SizedBox(height: 38),
               child,
             ],

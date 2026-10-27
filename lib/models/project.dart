@@ -1,6 +1,8 @@
 class PortfolioProject {
   final String? id;
   final String title;
+  final String? summary;
+  final String? contribution;
   final String? description;
   final List<String> tags;
 
@@ -11,6 +13,8 @@ class PortfolioProject {
   const PortfolioProject({
     this.id,
     required this.title,
+    this.summary,
+    this.contribution,
     this.description,
     this.tags = const [],
     this.images = const [],
@@ -25,9 +29,12 @@ class PortfolioProject {
     return PortfolioProject(
       id: json['id'] as String?,
       title: json['title'] as String? ?? '',
+      summary: json['summary'] as String?,
+      contribution: json['contribution'] as String?,
       description: json['description'] as String?,
       tags: (json['tags'] as List?)?.whereType<String>().toList() ?? const [],
-      images: (json['images'] as List?)?.whereType<String>().toList() ?? const [],
+      images:
+          (json['images'] as List?)?.whereType<String>().toList() ?? const [],
       url: json['url'] as String?,
       portfolioOnly: json['portfolioOnly'] as bool? ?? false,
     );
@@ -36,6 +43,8 @@ class PortfolioProject {
   Map<String, dynamic> toJson() => {
     'id': id,
     'title': title,
+    'summary': summary,
+    'contribution': contribution,
     'description': description,
     'tags': tags,
     'images': images,
@@ -46,6 +55,8 @@ class PortfolioProject {
   PortfolioProject copyWith({
     String? id,
     String? title,
+    String? summary,
+    String? contribution,
     String? description,
     List<String>? tags,
     List<String>? images,
@@ -55,6 +66,8 @@ class PortfolioProject {
     return PortfolioProject(
       id: id ?? this.id,
       title: title ?? this.title,
+      summary: summary ?? this.summary,
+      contribution: contribution ?? this.contribution,
       description: description ?? this.description,
       tags: tags ?? this.tags,
       images: images ?? this.images,

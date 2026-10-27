@@ -17,19 +17,33 @@ class ExperienceSection extends StatelessWidget {
             width: double.infinity,
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(26),
-            decoration: BoxDecoration(color: Brand.paper, borderRadius: BorderRadius.circular(18)),
+            decoration: BoxDecoration(
+              color: Brand.paper,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Brand.warmGray),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (item.dates != null) ...[eyebrow(item.dates!), const SizedBox(height: 8)],
+                if (item.dates != null) ...[
+                  eyebrow(item.dates!),
+                  const SizedBox(height: 8),
+                ],
                 Text(item.role, style: AppFonts.display(size: 25)),
                 if (item.organization != null)
-                  Text(item.organization!, style: AppFonts.body(size: 14, weight: FontWeight.w700)),
+                  Text(
+                    item.organization!,
+                    style: AppFonts.body(size: 14, weight: FontWeight.w700),
+                  ),
                 if (item.description != null) ...[
                   const SizedBox(height: 10),
                   Text(
                     item.description!,
-                    style: AppFonts.body(size: 14, color: Brand.muted, height: 1.55),
+                    style: AppFonts.body(
+                      size: 14,
+                      color: Brand.muted,
+                      height: 1.55,
+                    ),
                   ),
                 ],
               ],

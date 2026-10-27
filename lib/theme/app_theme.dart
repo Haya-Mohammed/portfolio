@@ -18,8 +18,10 @@ class Brand {
       isDark ? const Color(0xFF625C53) : const Color(0xFFCDC6BD);
   static Color get muted =>
       isDark ? const Color(0xFFC8BEB2) : const Color(0xFF59534D);
-  static const footer = Color(0xFF272727);
-  static const footerText = Color(0xFFF1ECE4);
+  static Color get deviceFrame =>
+      isDark ? const Color(0xFF151513) : const Color(0xFFE5DDD1);
+  static Color get deviceDetail =>
+      isDark ? const Color(0xFF8A8985) : const Color(0xFF998F82);
 }
 
 class AppFonts {

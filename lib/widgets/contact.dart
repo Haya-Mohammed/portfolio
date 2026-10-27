@@ -8,38 +8,95 @@ import 'package:url_launcher/url_launcher.dart';
 class ContactSection extends StatelessWidget {
   const ContactSection({super.key});
 
-  Widget link(ContactLink item) =>
-      OutlinedButton(onPressed: () => open(item.url), child: Text(item.label));
-
-  Future<void> open(String url) async =>
+  Future<void> _open(String url) async =>
       launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 
+  Widget _secondaryLink(ContactLink item) => TextButton.icon(
+    onPressed: () => _open(item.url),
+    icon: const Icon(Icons.open_in_new, size: 16),
+    label: Text(item.label),
+  );
+
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Have a Flutter role or an app idea? I’d be glad to hear about it.',
-          style: AppFonts.body(size: 18, color: Brand.muted),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Container(
+        key: const Key('contact-callout'),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Brand.isDark ? Brand.deviceFrame : Brand.oatmeal,
+          borderRadius: BorderRadius.circular(24),
         ),
-        const SizedBox(height: 24),
-        FilledButton.icon(
-          onPressed: () => open('mailto:${AppConstants.email}'),
-          icon: const Icon(Icons.mail_outline),
-          label: const Text('Email Haya'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'HAVE A PROJECT OR OPPORTUNITY?',
+              style: AppFonts.mono(size: 11),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Let’s make something useful together.',
+              style: AppFonts.display(size: 32),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'I’m open to Flutter roles, freelance projects, and thoughtful collaborations.',
+              style: AppFonts.body(size: 16, color: Brand.muted, height: 1.5),
+            ),
+            const SizedBox(height: 26),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton.icon(
+                  onPressed: () => _open('mailto:${AppConstants.email}'),
+                  icon: const Icon(Icons.mail_outline),
+                  label: const Text('Email me'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _open(AppConstants.linkedIn),
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: const Text('LinkedIn'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _open(AppConstants.github),
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: const Text('GitHub'),
+                ),
+              ],
+            ),
+          ],
         ),
-        const SizedBox(height: 24),
-        Wrap(spacing: 8, runSpacing: 8, children: PortfolioContent.socialLinks.map(link).toList()),
-        const SizedBox(height: 18),
-        Text('Freelance profiles', style: AppFonts.body(size: 14, weight: FontWeight.w700)),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: PortfolioContent.freelanceProfiles.map(link).toList(),
+      ),
+      const SizedBox(height: 12),
+      Material(
+        color: Colors.transparent,
+        child: ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          childrenPadding: const EdgeInsets.only(bottom: 8),
+          title: Text(
+            'More ways to connect',
+            style: AppFonts.body(size: 14, weight: FontWeight.w700),
+          ),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final item in PortfolioContent.socialLinks.skip(2))
+                    _secondaryLink(item),
+                  for (final item in PortfolioContent.freelanceProfiles)
+                    _secondaryLink(item),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 }

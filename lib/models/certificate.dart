@@ -5,11 +5,23 @@ class Certificate {
   final String? date;
 
   final String? details;
+  final bool featured;
 
-  const Certificate({this.id, required this.title, this.issuer, this.date, this.details});
+  const Certificate({
+    this.id,
+    required this.title,
+    this.issuer,
+    this.date,
+    this.details,
+    this.featured = false,
+  });
 
-  String get summary =>
-      [title, issuer, date, details].where((part) => part != null && part.isNotEmpty).join(' · ');
+  String get summary => [
+    title,
+    issuer,
+    date,
+    details,
+  ].where((part) => part != null && part.isNotEmpty).join(' · ');
 
   factory Certificate.fromJson(Map<String, dynamic> json) => Certificate(
     id: json['id'] as String?,
@@ -17,6 +29,7 @@ class Certificate {
     issuer: json['issuer'] as String?,
     date: json['date'] as String?,
     details: json['details'] as String?,
+    featured: json['featured'] as bool? ?? false,
   );
 
   Map<String, dynamic> toJson() => {
@@ -25,5 +38,6 @@ class Certificate {
     'issuer': issuer,
     'date': date,
     'details': details,
+    'featured': featured,
   };
 }

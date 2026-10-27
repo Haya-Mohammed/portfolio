@@ -8,14 +8,20 @@ import 'package:my_portfolio/widgets/skills.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'content/portfolio_content.dart';
-import 'core/cv_download_stub.dart' if (dart.library.html) 'core/cv_download_web.dart' as cv;
+import 'core/cv_download_stub.dart'
+    if (dart.library.html) 'core/cv_download_web.dart'
+    as cv;
 import 'theme/app_theme.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isDark;
-  final VoidCallback onToggleTheme;
+  final ValueChanged<ThemeMode> onThemeChanged;
 
-  const HomeScreen({super.key, required this.isDark, required this.onToggleTheme});
+  const HomeScreen({
+    super.key,
+    required this.isDark,
+    required this.onThemeChanged,
+  });
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -23,7 +29,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final scroll = ScrollController();
   final keys = <String, GlobalKey>{
-    for (final name in ['work', 'skills', 'about', 'experience', 'contact']) name: GlobalKey(),
+    for (final name in ['work', 'skills', 'about', 'experience', 'contact'])
+      name: GlobalKey(),
   };
 
   void go(String name) {
@@ -54,6 +61,26 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: Brand.ivory,
+    bottomNavigationBar: MediaQuery.sizeOf(context).width < 600
+        ? SafeArea(
+            top: false,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Brand.paper,
+                border: Border(top: BorderSide(color: Brand.warmGray)),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Row(
+                children: [
+                  _mobileNavItem(Icons.apps_rounded, 'Work', 'work'),
+                  _mobileNavItem(Icons.layers_outlined, 'Skills', 'skills'),
+                  _mobileNavItem(Icons.person_outline, 'About', 'about'),
+                  _mobileNavItem(Icons.mail_outline, 'Contact', 'contact'),
+                ],
+              ),
+            ),
+          )
+        : null,
     body: LayoutBuilder(
       builder: (context, box) {
         final narrow = box.maxWidth < 900;
@@ -71,14 +98,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Apps shaped by real problems',
                       key: keys['work']!,
                       shaded: false,
-                      child: const ProjectsSection(),
+                      child: ProjectsSection(),
                     ),
                     Section(
                       label: '02 / WHAT I DO',
                       title: 'Building with care',
                       key: keys['skills']!,
                       shaded: true,
-                      child: const SkillsSection(),
+                      child: SkillsSection(),
                     ),
                     Section(
                       label: '03 / ABOUT',
@@ -92,23 +119,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Where I have contributed',
                       key: keys['experience']!,
                       shaded: true,
-                      child: const ExperienceSection(),
+                      child: ExperienceSection(),
                     ),
                     Section(
                       label: '05 / CONTACT',
                       title: 'Let’s build something thoughtful',
                       key: keys['contact']!,
                       shaded: false,
-                      child: const ContactSection(),
+                      child: ContactSection(),
                     ),
                     Container(
                       width: double.infinity,
-                      color: Brand.footer,
+                      color: Brand.paper,
                       padding: const EdgeInsets.all(28),
                       child: Text(
                         '© 2026 Haya Obaid · ${PortfolioContent.tagline}',
                         textAlign: TextAlign.center,
-                        style: AppFonts.body(size: 13, color: Brand.footerText),
+                        style: AppFonts.body(size: 13, color: Brand.muted),
                       ),
                     ),
                   ],
@@ -120,6 +147,27 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     ),
   );
+
+  Widget _mobileNavItem(IconData icon, String label, String section) =>
+      Expanded(
+        child: InkWell(
+          onTap: () => go(section),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 7),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 20, color: Brand.charcoal),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: AppFonts.body(size: 10, weight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 
   Widget header(bool narrow) {
     const links = {
@@ -148,24 +196,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeOut,
                 ),
-                child: Text('Haya Obaid', style: AppFonts.body(size: 18, weight: FontWeight.w700)),
+                child: Text(
+                  'Haya Obaid',
+                  style: AppFonts.body(size: 18, weight: FontWeight.w700),
+                ),
               ),
               const Spacer(),
               IconButton(
-                tooltip: widget.isDark ? 'Switch to light mode' : 'Switch to dark mode',
-                onPressed: widget.onToggleTheme,
-                icon: Icon(widget.isDark ? Icons.light_mode : Icons.dark_mode),
+                tooltip: widget.isDark
+                    ? 'Switch to light mode'
+                    : 'Switch to dark mode',
+                onPressed: () => widget.onThemeChanged(
+                  widget.isDark ? ThemeMode.light : ThemeMode.dark,
+                ),
+                icon: Icon(
+                  widget.isDark
+                      ? Icons.light_mode_outlined
+                      : Icons.dark_mode_outlined,
+                ),
               ),
-              if (narrow)
+              if (narrow && MediaQuery.sizeOf(context).width >= 600)
                 PopupMenuButton<String>(
                   tooltip: 'Open navigation menu',
                   icon: const Icon(Icons.menu),
                   onSelected: go,
                   itemBuilder: (_) => links.entries
-                      .map((e) => PopupMenuItem(value: e.value, child: Text(e.key)))
+                      .map(
+                        (e) =>
+                            PopupMenuItem(value: e.value, child: Text(e.key)),
+                      )
                       .toList(),
                 )
-              else
+              else if (!narrow)
                 for (final e in links.entries)
                   TextButton(onPressed: () => go(e.value), child: Text(e.key)),
             ],
@@ -188,7 +250,11 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 20),
         Text(
           PortfolioContent.tagline,
-          style: AppFonts.body(size: 22, weight: FontWeight.w600, color: Brand.deepMustard),
+          style: AppFonts.body(
+            size: 22,
+            weight: FontWeight.w600,
+            color: Brand.deepMustard,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
@@ -200,27 +266,43 @@ class _HomeScreenState extends State<HomeScreen> {
           spacing: 12,
           runSpacing: 12,
           children: [
-            FilledButton(onPressed: () => go('work'), child: const Text('View my work')),
-            OutlinedButton(onPressed: downloadCv, child: const Text('Download CV')),
+            FilledButton(
+              onPressed: () => go('work'),
+              child: const Text('View my work'),
+            ),
+            OutlinedButton(
+              onPressed: downloadCv,
+              child: const Text('Download CV'),
+            ),
           ],
         ),
       ],
     );
-    final artwork = ClipRRect(
-      borderRadius: BorderRadius.circular(22),
-      child: ColoredBox(
-        color: widget.isDark ? Colors.white : Colors.transparent,
+    final artwork = Container(
+      decoration: BoxDecoration(
+        color: Brand.paper,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Brand.warmGray),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
         child: Image.asset(
-          'assets/brand/haya-logo-original.png',
+          widget.isDark
+              ? 'assets/brand/haya-logo-dark.png'
+              : 'assets/brand/haya-logo-original.png',
           width: narrow ? 460 : 480,
-          semanticLabel: 'Original Haya Obaid monogram brand artwork',
+          semanticLabel: 'Haya Obaid monogram brand artwork',
         ),
       ),
     );
     return Container(
       width: double.infinity,
       color: Brand.ivory,
-      padding: EdgeInsets.symmetric(horizontal: narrow ? 20 : 48, vertical: narrow ? 68 : 100),
+      padding: EdgeInsets.symmetric(
+        horizontal: narrow ? 20 : 48,
+        vertical: narrow ? 68 : 100,
+      ),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1220),
