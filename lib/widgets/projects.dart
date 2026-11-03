@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:my_portfolio/content/portfolio_content.dart';
+import 'package:my_portfolio/content/projects_data.dart';
 import 'package:my_portfolio/models/project.dart';
 import 'package:my_portfolio/theme/app_theme.dart';
 import 'package:my_portfolio/widgets/common/tag.dart';
@@ -26,10 +26,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
 
   void _move(double distance) {
     if (!_scroll.hasClients) return;
-    final target = (_scroll.offset + distance).clamp(
-      0.0,
-      _scroll.position.maxScrollExtent,
-    );
+    final target = (_scroll.offset + distance).clamp(0.0, _scroll.position.maxScrollExtent);
     _scroll.animateTo(
       target,
       duration: const Duration(milliseconds: 350),
@@ -39,7 +36,6 @@ class _ProjectsSectionState extends State<ProjectsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final projects = PortfolioContent.projects;
     return LayoutBuilder(
       builder: (context, box) => SizedBox(
         width: box.maxWidth,
@@ -48,12 +44,7 @@ class _ProjectsSectionState extends State<ProjectsSection> {
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Text(
-                    'SWIPE THROUGH THE APPS',
-                    style: AppFonts.mono(size: 10),
-                  ),
-                ),
+                Expanded(child: Text('SWIPE THROUGH THE APPS', style: AppFonts.mono(size: 10))),
                 IconButton(
                   tooltip: 'Previous projects',
                   onPressed: () => _move(-256),
@@ -74,26 +65,21 @@ class _ProjectsSectionState extends State<ProjectsSection> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    for (final project in projects.take(_initialCount)) ...[
-                      SizedBox(
-                        width: 240,
-                        child: ProjectCard(project: project),
-                      ),
+                    for (final project in kProjects.take(_initialCount)) ...[
+                      SizedBox(width: 240, child: ProjectCard(project: project)),
                       const SizedBox(width: 16),
                     ],
                   ],
                 ),
               ),
             ),
-            if (projects.length > _initialCount) ...[
+            if (kProjects.length > _initialCount) ...[
               const SizedBox(height: 20),
               Align(
                 child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const AllProjectsScreen(),
-                    ),
-                  ),
+                  onPressed: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute<void>(builder: (_) => const AllProjectsScreen())),
                   icon: const Icon(Icons.arrow_forward),
                   label: const Text('See all projects'),
                 ),
@@ -125,10 +111,7 @@ class AllProjectsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'All projects',
-                style: AppFonts.display(size: 40),
-              ),
+              Text('All projects', style: AppFonts.display(size: 40)),
               const SizedBox(height: 12),
               Text(
                 'Explore the apps and the work behind them.',
@@ -140,7 +123,7 @@ class AllProjectsScreen extends StatelessWidget {
                 spacing: 20,
                 runSpacing: 20,
                 children: [
-                  for (final project in PortfolioContent.projects)
+                  for (final project in kProjects)
                     SizedBox(width: 240, child: ProjectCard(project: project)),
                 ],
               ),
@@ -158,10 +141,7 @@ class ProjectCard extends StatelessWidget {
   const ProjectCard({super.key, required this.project});
 
   Future<void> _openCode() async {
-    await launchUrl(
-      Uri.parse(project.url!),
-      mode: LaunchMode.externalApplication,
-    );
+    await launchUrl(Uri.parse(project.url!), mode: LaunchMode.externalApplication);
   }
 
   Future<void> _showProject(BuildContext context) async {
@@ -207,8 +187,7 @@ class ProjectCard extends StatelessWidget {
                         child: PageView.builder(
                           controller: controller,
                           itemCount: project.images.length,
-                          onPageChanged: (index) =>
-                              setDialogState(() => selected = index),
+                          onPageChanged: (index) => setDialogState(() => selected = index),
                           itemBuilder: (context, index) => ColoredBox(
                             color: Brand.ivory,
                             child: Image.asset(
@@ -216,19 +195,15 @@ class ProjectCard extends StatelessWidget {
                               fit: BoxFit.contain,
                               semanticLabel:
                                   '${project.title} image ${index + 1} of ${project.images.length}',
-                              errorBuilder: (_, _, _) => const Center(
-                                child: Text('Image unavailable'),
-                              ),
+                              errorBuilder: (_, _, _) =>
+                                  const Center(child: Text('Image unavailable')),
                             ),
                           ),
                         ),
                       ),
                     if (project.images.length > 1)
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -237,17 +212,13 @@ class ProjectCard extends StatelessWidget {
                               onPressed: selected == 0
                                   ? null
                                   : () => controller.previousPage(
-                                      duration: const Duration(
-                                        milliseconds: 250,
-                                      ),
+                                      duration: const Duration(milliseconds: 250),
                                       curve: Curves.easeOut,
                                     ),
                               icon: const Icon(Icons.chevron_left),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
                                 '${selected + 1} / ${project.images.length}',
                                 style: AppFonts.body(size: 13),
@@ -258,9 +229,7 @@ class ProjectCard extends StatelessWidget {
                               onPressed: selected == project.images.length - 1
                                   ? null
                                   : () => controller.nextPage(
-                                      duration: const Duration(
-                                        milliseconds: 250,
-                                      ),
+                                      duration: const Duration(milliseconds: 250),
                                       curve: Curves.easeOut,
                                     ),
                               icon: const Icon(Icons.chevron_right),
@@ -285,10 +254,7 @@ class ProjectCard extends StatelessWidget {
                               Wrap(
                                 spacing: 6,
                                 runSpacing: 6,
-                                children: [
-                                  for (final tag in project.tags)
-                                    CustomTag(label: tag),
-                                ],
+                                children: [for (final tag in project.tags) CustomTag(label: tag)],
                               ),
                             ],
                             if (project.hasUrl) ...[
@@ -397,11 +363,7 @@ class _ProjectSummary extends StatelessWidget {
           project.contribution!,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppFonts.body(
-            size: 11,
-            color: Brand.deepMustard,
-            weight: FontWeight.w700,
-          ),
+          style: AppFonts.body(size: 11, color: Brand.deepMustard, weight: FontWeight.w700),
         ),
       ],
       const SizedBox(height: 7),
@@ -416,9 +378,7 @@ class _ProjectSummary extends StatelessWidget {
         Wrap(
           spacing: 5,
           runSpacing: 5,
-          children: [
-            for (final tag in project.tags.take(2)) CustomTag(label: tag),
-          ],
+          children: [for (final tag in project.tags.take(2)) CustomTag(label: tag)],
         ),
       ],
       const Spacer(),
@@ -426,14 +386,8 @@ class _ProjectSummary extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            project.images.length > 1
-                ? 'View ${project.images.length} images'
-                : 'View project',
-            style: AppFonts.body(
-              size: 12,
-              weight: FontWeight.w700,
-              color: Brand.deepMustard,
-            ),
+            project.images.length > 1 ? 'View ${project.images.length} images' : 'View project',
+            style: AppFonts.body(size: 12, weight: FontWeight.w700, color: Brand.deepMustard),
           ),
           const SizedBox(width: 4),
           Icon(Icons.arrow_forward, size: 15, color: Brand.deepMustard),
@@ -459,8 +413,7 @@ class _ProjectPreview extends StatelessWidget {
               project.images.first,
               fit: BoxFit.contain,
               semanticLabel: '${project.title} cover image',
-              errorBuilder: (_, _, _) =>
-                  const Center(child: Text('Image unavailable')),
+              errorBuilder: (_, _, _) => const Center(child: Text('Image unavailable')),
             )
           : Container(
               decoration: BoxDecoration(
@@ -476,11 +429,7 @@ class _ProjectPreview extends StatelessWidget {
                 children: [
                   Text('CASE STUDY  /  APP', style: AppFonts.mono(size: 9)),
                   const Spacer(),
-                  Icon(
-                    Icons.phone_iphone_rounded,
-                    size: 32,
-                    color: Brand.deepMustard,
-                  ),
+                  Icon(Icons.phone_iphone_rounded, size: 32, color: Brand.deepMustard),
                   const SizedBox(height: 4),
                   Text(
                     project.title,
