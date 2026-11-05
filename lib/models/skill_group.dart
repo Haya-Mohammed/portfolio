@@ -4,7 +4,12 @@ class SkillGroup {
   final String? description;
   final List<String> tags;
 
-  const SkillGroup({this.id, required this.title, this.description, this.tags = const []});
+  const SkillGroup({
+    this.id,
+    required this.title,
+    this.description,
+    this.tags = const [],
+  });
 
   factory SkillGroup.fromJson(Map<String, dynamic> json) => SkillGroup(
     id: json['id'] as String?,

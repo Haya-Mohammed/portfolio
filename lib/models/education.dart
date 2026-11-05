@@ -7,11 +7,20 @@ class Education {
   /// e.g. GPA / honors line.
   final String? details;
 
-  const Education({this.id, required this.degree, this.institution, this.period, this.details});
+  const Education({
+    this.id,
+    required this.degree,
+    this.institution,
+    this.period,
+    this.details,
+  });
 
   /// 'Degree · Institution · Period', skipping null/empty parts.
-  String get headline =>
-      [degree, institution, period].where((part) => part != null && part.isNotEmpty).join(' · ');
+  String get headline => [
+    degree,
+    institution,
+    period,
+  ].where((part) => part != null && part.isNotEmpty).join(' · ');
 
   factory Education.fromJson(Map<String, dynamic> json) => Education(
     id: json['id'] as String?,

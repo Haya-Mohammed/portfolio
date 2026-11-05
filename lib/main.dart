@@ -1,10 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:my_portfolio/core/theme/app_colors.dart';
+import 'package:my_portfolio/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'home_screen.dart';
-import 'theme/app_theme.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const PortfolioApp());
@@ -63,15 +64,12 @@ class _PortfolioAppState extends State<PortfolioApp>
         (_themeMode == ThemeMode.system &&
             WidgetsBinding.instance.platformDispatcher.platformBrightness ==
                 Brightness.dark);
-    Brand.isDark = isDark;
+    AppColors.isDark = isDark;
     return MaterialApp(
       title: 'Haya Obaid | Mobile Application Developer',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(),
-      home: HomeScreen(
-        isDark: isDark,
-        onThemeChanged: _setTheme,
-      ),
+      home: HomeScreen(isDark: isDark, onThemeChanged: _setTheme),
       scrollBehavior: _SmoothScrollBehavior(),
     );
   }

@@ -5,7 +5,13 @@ class Experience {
   final String? dates;
   final String? description;
 
-  const Experience({this.id, required this.role, this.organization, this.dates, this.description});
+  const Experience({
+    this.id,
+    required this.role,
+    this.organization,
+    this.dates,
+    this.description,
+  });
 
   factory Experience.fromJson(Map<String, dynamic> json) => Experience(
     id: json['id'] as String?,

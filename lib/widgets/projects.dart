@@ -1,11 +1,14 @@
-import 'dart:math' as math;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:my_portfolio/content/projects_data.dart';
+import 'package:my_portfolio/core/theme/app_colors.dart';
+import 'package:my_portfolio/core/theme/app_fonts.dart';
 import 'package:my_portfolio/models/project.dart';
-import 'package:my_portfolio/theme/app_theme.dart';
 import 'package:my_portfolio/widgets/common/tag.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:my_portfolio/widgets/project_details.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class ProjectsSection extends StatefulWidget {
   const ProjectsSection({super.key});
@@ -15,18 +18,35 @@ class ProjectsSection extends StatefulWidget {
 }
 
 class _ProjectsSectionState extends State<ProjectsSection> {
-  static const _initialCount = 6;
+  static const _cardExtent = 256.0;
   final ScrollController _scroll = ScrollController();
+  Timer? _advanceTimer;
+  bool _visible = false;
+  bool _manuallyControlled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_updateProgress);
+  }
+
+  void _updateProgress() => setState(() {});
 
   @override
   void dispose() {
+    _advanceTimer?.cancel();
     _scroll.dispose();
     super.dispose();
   }
 
   void _move(double distance) {
+    _manuallyControlled = true;
+    _advanceTimer?.cancel();
     if (!_scroll.hasClients) return;
-    final target = (_scroll.offset + distance).clamp(0.0, _scroll.position.maxScrollExtent);
+    final target = (_scroll.offset + distance).clamp(
+      0.0,
+      _scroll.position.maxScrollExtent,
+    );
     _scroll.animateTo(
       target,
       duration: const Duration(milliseconds: 350),
@@ -34,58 +54,145 @@ class _ProjectsSectionState extends State<ProjectsSection> {
     );
   }
 
+  void _updateVisibility(VisibilityInfo info) {
+    _visible = info.visibleFraction > 0.1;
+    if (!_visible ||
+        _manuallyControlled ||
+        MediaQuery.disableAnimationsOf(context)) {
+      _advanceTimer?.cancel();
+      _advanceTimer = null;
+      return;
+    }
+    _advanceTimer ??= Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!_scroll.hasClients) return;
+      final max = _scroll.position.maxScrollExtent;
+      if (_scroll.offset >= max - 1) {
+        _advanceTimer?.cancel();
+        _advanceTimer = null;
+        return;
+      }
+      _scroll.animateTo(
+        (_scroll.offset + _cardExtent).clamp(0.0, max),
+        duration: const Duration(milliseconds: 650),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, box) => SizedBox(
-        width: box.maxWidth,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(child: Text('SWIPE THROUGH THE APPS', style: AppFonts.mono(size: 10))),
-                IconButton(
-                  tooltip: 'Previous projects',
-                  onPressed: () => _move(-256),
-                  icon: const Icon(Icons.arrow_back),
+    final progress = _scroll.hasClients && _scroll.position.maxScrollExtent > 0
+        ? _scroll.offset / _scroll.position.maxScrollExtent
+        : 0.0;
+    final current =
+        _scroll.hasClients &&
+            _scroll.offset >= _scroll.position.maxScrollExtent - 1
+        ? kProjects.length
+        : ((_scroll.hasClients ? _scroll.offset : 0) / _cardExtent).round() + 1;
+    return VisibilityDetector(
+      key: const Key('projects-carousel-visibility'),
+      onVisibilityChanged: _updateVisibility,
+      child: LayoutBuilder(
+        builder: (context, box) => SizedBox(
+          width: box.maxWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'SWIPE THROUGH THE APPS',
+                      style: AppFonts.mono(size: 10),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Previous projects',
+                    onPressed: () => _move(-256),
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                  IconButton(
+                    tooltip: 'Next projects',
+                    onPressed: () => _move(256),
+                    icon: const Icon(Icons.arrow_forward),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 470,
+                child: NotificationListener<ScrollStartNotification>(
+                  onNotification: (notification) {
+                    if (notification.dragDetails != null) {
+                      _manuallyControlled = true;
+                      _advanceTimer?.cancel();
+                      _advanceTimer = null;
+                    }
+                    return false;
+                  },
+                  child: SingleChildScrollView(
+                    controller: _scroll,
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final (index, project) in kProjects.indexed) ...[
+                          SizedBox(
+                            width: 240,
+                            child: ProjectCard(project: project)
+                                .animate(
+                                  delay: Duration(milliseconds: index * 65),
+                                )
+                                .fadeIn(
+                                  duration: const Duration(milliseconds: 450),
+                                )
+                                .slideX(begin: 0.08, end: 0),
+                          ),
+                          const SizedBox(width: 16),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-                IconButton(
-                  tooltip: 'Next projects',
-                  onPressed: () => _move(256),
-                  icon: const Icon(Icons.arrow_forward),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Text(
+                    '${current.toString().padLeft(2, '0')} / ${kProjects.length.toString().padLeft(2, '0')}',
+                    style: AppFonts.mono(size: 11),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress.clamp(0.0, 1.0),
+                        minHeight: 3,
+                        backgroundColor: AppColors.warmGray,
+                        valueColor: AlwaysStoppedAnimation(
+                          AppColors.deepMustard,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (kProjects.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                Align(
+                  child: OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AllProjectsScreen(),
+                      ),
+                    ),
+                    icon: const Icon(Icons.arrow_forward),
+                    label: const Text('See all projects'),
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 470,
-              child: SingleChildScrollView(
-                controller: _scroll,
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final project in kProjects.take(_initialCount)) ...[
-                      SizedBox(width: 240, child: ProjectCard(project: project)),
-                      const SizedBox(width: 16),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            if (kProjects.length > _initialCount) ...[
-              const SizedBox(height: 20),
-              Align(
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute<void>(builder: (_) => const AllProjectsScreen())),
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('See all projects'),
-                ),
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -97,10 +204,10 @@ class AllProjectsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: Brand.ivory,
+    backgroundColor: AppColors.ivory,
     appBar: AppBar(
-      backgroundColor: Brand.paper,
-      foregroundColor: Brand.charcoal,
+      backgroundColor: AppColors.paper,
+      foregroundColor: AppColors.charcoal,
       title: Text('Projects', style: AppFonts.display(size: 22)),
     ),
     body: SingleChildScrollView(
@@ -115,7 +222,7 @@ class AllProjectsScreen extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'Explore the apps and the work behind them.',
-                style: AppFonts.body(size: 16, color: Brand.muted),
+                style: AppFonts.body(size: 16, color: AppColors.muted),
               ),
               const SizedBox(height: 32),
               Wrap(
@@ -135,206 +242,107 @@ class AllProjectsScreen extends StatelessWidget {
   );
 }
 
-class ProjectCard extends StatelessWidget {
+class ProjectCard extends StatefulWidget {
   final PortfolioProject project;
 
   const ProjectCard({super.key, required this.project});
 
-  Future<void> _openCode() async {
-    await launchUrl(Uri.parse(project.url!), mode: LaunchMode.externalApplication);
-  }
+  @override
+  State<ProjectCard> createState() => _ProjectCardState();
+}
 
-  Future<void> _showProject(BuildContext context) async {
-    final controller = PageController();
-    var selected = 0;
-    try {
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => StatefulBuilder(
-          builder: (dialogContext, setDialogState) {
-            final screen = MediaQuery.sizeOf(dialogContext);
-            return Dialog(
-              backgroundColor: Brand.paper,
-              insetPadding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: math.min(screen.width - 32, 900),
-                height: math.min(screen.height - 32, 700),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              project.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppFonts.display(size: 22),
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: 'Close project',
-                            onPressed: () => Navigator.pop(dialogContext),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (project.hasImages)
-                      Expanded(
-                        flex: 3,
-                        child: PageView.builder(
-                          controller: controller,
-                          itemCount: project.images.length,
-                          onPageChanged: (index) => setDialogState(() => selected = index),
-                          itemBuilder: (context, index) => ColoredBox(
-                            color: Brand.ivory,
-                            child: Image.asset(
-                              project.images[index],
-                              fit: BoxFit.contain,
-                              semanticLabel:
-                                  '${project.title} image ${index + 1} of ${project.images.length}',
-                              errorBuilder: (_, _, _) =>
-                                  const Center(child: Text('Image unavailable')),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (project.images.length > 1)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              tooltip: 'Previous image',
-                              onPressed: selected == 0
-                                  ? null
-                                  : () => controller.previousPage(
-                                      duration: const Duration(milliseconds: 250),
-                                      curve: Curves.easeOut,
-                                    ),
-                              icon: const Icon(Icons.chevron_left),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                '${selected + 1} / ${project.images.length}',
-                                style: AppFonts.body(size: 13),
-                              ),
-                            ),
-                            IconButton(
-                              tooltip: 'Next image',
-                              onPressed: selected == project.images.length - 1
-                                  ? null
-                                  : () => controller.nextPage(
-                                      duration: const Duration(milliseconds: 250),
-                                      curve: Curves.easeOut,
-                                    ),
-                              icon: const Icon(Icons.chevron_right),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Expanded(
-                      flex: project.hasImages ? 2 : 1,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (project.description != null)
-                              Text(
-                                project.description!,
-                                style: AppFonts.body(size: 15, height: 1.55),
-                              ),
-                            if (project.tags.isNotEmpty) ...[
-                              const SizedBox(height: 16),
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: [for (final tag in project.tags) CustomTag(label: tag)],
-                              ),
-                            ],
-                            if (project.hasUrl) ...[
-                              const SizedBox(height: 16),
-                              TextButton.icon(
-                                onPressed: _openCode,
-                                icon: const Icon(Icons.open_in_new, size: 16),
-                                label: const Text('View code'),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    } finally {
-      controller.dispose();
-    }
-  }
+class _ProjectCardState extends State<ProjectCard> {
+  PortfolioProject get project => widget.project;
+  bool _hovered = false;
+
+  Future<void> _showProject(BuildContext context) =>
+      showProjectDetails(context, project);
 
   @override
   Widget build(BuildContext context) => SizedBox(
     height: 470,
-    child: Material(
-      color: Brand.deviceFrame,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Brand.warmGray),
-        borderRadius: BorderRadius.circular(34),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _showProject(context),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            children: [
-              Container(
-                width: 62,
-                height: 5,
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Brand.deviceDetail,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: ColoredBox(
-                    color: Brand.paper,
-                    child: Column(
-                      children: [
-                        _ProjectPreview(project: project),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(14, 13, 14, 8),
-                            child: _ProjectSummary(project: project),
-                          ),
-                        ),
-                      ],
+    child: MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedSlide(
+        offset: _hovered && !MediaQuery.disableAnimationsOf(context)
+            ? const Offset(0, -0.025)
+            : Offset.zero,
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        child: Material(
+          color: AppColors.deviceFrame,
+          elevation: _hovered ? 12 : 0,
+          shadowColor: AppColors.deepMustard.withValues(alpha: 0.5),
+          animationDuration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 240),
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              color: _hovered ? AppColors.deepMustard : AppColors.warmGray,
+              width: _hovered ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(34),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onHover: (value) {
+              if (_hovered != value) setState(() => _hovered = value);
+            },
+            onFocusChange: (value) => setState(() => _hovered = value),
+            onTap: () => _showProject(context),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  Container(
+                    width: 62,
+                    height: 5,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.deviceDetail,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                ),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: ColoredBox(
+                        color: AppColors.paper,
+                        child: Column(
+                          children: [
+                            _ProjectPreview(project: project),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  14,
+                                  13,
+                                  14,
+                                  8,
+                                ),
+                                child: _ProjectSummary(project: project),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 42,
+                    height: 4,
+                    margin: const EdgeInsets.only(top: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.deviceDetail,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ],
               ),
-              Container(
-                width: 42,
-                height: 4,
-                margin: const EdgeInsets.only(top: 8),
-                decoration: BoxDecoration(
-                  color: Brand.deviceDetail,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -363,7 +371,11 @@ class _ProjectSummary extends StatelessWidget {
           project.contribution!,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppFonts.body(size: 11, color: Brand.deepMustard, weight: FontWeight.w700),
+          style: AppFonts.body(
+            size: 11,
+            color: AppColors.deepMustard,
+            weight: FontWeight.w700,
+          ),
         ),
       ],
       const SizedBox(height: 7),
@@ -371,14 +383,16 @@ class _ProjectSummary extends StatelessWidget {
         project.summary ?? project.description ?? '',
         maxLines: 3,
         overflow: TextOverflow.ellipsis,
-        style: AppFonts.body(size: 12, color: Brand.muted, height: 1.35),
+        style: AppFonts.body(size: 12, color: AppColors.muted, height: 1.35),
       ),
       if (project.tags.isNotEmpty) ...[
         const SizedBox(height: 8),
         Wrap(
           spacing: 5,
           runSpacing: 5,
-          children: [for (final tag in project.tags.take(2)) CustomTag(label: tag)],
+          children: [
+            for (final tag in project.tags.take(2)) CustomTag(label: tag),
+          ],
         ),
       ],
       const Spacer(),
@@ -386,11 +400,17 @@ class _ProjectSummary extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            project.images.length > 1 ? 'View ${project.images.length} images' : 'View project',
-            style: AppFonts.body(size: 12, weight: FontWeight.w700, color: Brand.deepMustard),
+            project.images.length > 1
+                ? 'View ${project.images.length} images'
+                : 'View project',
+            style: AppFonts.body(
+              size: 12,
+              weight: FontWeight.w700,
+              color: AppColors.deepMustard,
+            ),
           ),
           const SizedBox(width: 4),
-          Icon(Icons.arrow_forward, size: 15, color: Brand.deepMustard),
+          Icon(Icons.arrow_forward, size: 15, color: AppColors.deepMustard),
         ],
       ),
     ],
@@ -406,46 +426,54 @@ class _ProjectPreview extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     height: 145,
     width: double.infinity,
-    child: ColoredBox(
-      color: Brand.oatmeal,
-      child: project.hasImages
-          ? Image.asset(
-              project.images.first,
-              fit: BoxFit.contain,
-              semanticLabel: '${project.title} cover image',
-              errorBuilder: (_, _, _) => const Center(child: Text('Image unavailable')),
-            )
-          : Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Brand.oatmeal, Brand.paper],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+    child: Hero(
+      tag: 'project-${project.id ?? project.title}',
+      child: ColoredBox(
+        color: AppColors.oatmeal,
+        child: project.hasImages
+            ? Image.asset(
+                project.images.first,
+                fit: BoxFit.contain,
+                semanticLabel: '${project.title} cover image',
+                errorBuilder: (_, _, _) =>
+                    const Center(child: Text('Image unavailable')),
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.oatmeal, AppColors.paper],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('CASE STUDY  /  APP', style: AppFonts.mono(size: 9)),
+                    const Spacer(),
+                    Icon(
+                      Icons.phone_iphone_rounded,
+                      size: 32,
+                      color: AppColors.deepMustard,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      project.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppFonts.body(size: 14, weight: FontWeight.w700),
+                    ),
+                    Container(
+                      width: 48,
+                      height: 3,
+                      margin: const EdgeInsets.only(top: 8),
+                      color: AppColors.deepMustard,
+                    ),
+                  ],
                 ),
               ),
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('CASE STUDY  /  APP', style: AppFonts.mono(size: 9)),
-                  const Spacer(),
-                  Icon(Icons.phone_iphone_rounded, size: 32, color: Brand.deepMustard),
-                  const SizedBox(height: 4),
-                  Text(
-                    project.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.body(size: 14, weight: FontWeight.w700),
-                  ),
-                  Container(
-                    width: 48,
-                    height: 3,
-                    margin: const EdgeInsets.only(top: 8),
-                    color: Brand.deepMustard,
-                  ),
-                ],
-              ),
-            ),
+      ),
     ),
   );
 }

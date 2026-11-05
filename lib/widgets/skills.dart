@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_portfolio/content/portfolio_content.dart';
-import 'package:my_portfolio/theme/app_theme.dart';
+import 'package:my_portfolio/content/skills_data.dart';
+import 'package:my_portfolio/core/theme/app_colors.dart';
+import 'package:my_portfolio/core/theme/app_fonts.dart';
+import 'package:my_portfolio/widgets/common/motion.dart';
 import 'package:my_portfolio/widgets/common/tag.dart';
 
 class SkillsSection extends StatelessWidget {
@@ -18,16 +20,10 @@ class SkillsSection extends StatelessWidget {
           spacing: 20,
           runSpacing: 20,
           children: [
-            for (final (index, s) in PortfolioContent.skills.indexed)
+            for (final (index, s) in kSkills.indexed)
               SizedBox(
                 width: width,
-                child: Container(
-                  padding: const EdgeInsets.all(26),
-                  decoration: BoxDecoration(
-                    color: Brand.paper,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Brand.warmGray),
-                  ),
+                child: HoverSurface(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -36,7 +32,7 @@ class SkillsSection extends StatelessWidget {
                         height: 46,
                         margin: const EdgeInsets.only(bottom: 18),
                         decoration: BoxDecoration(
-                          color: Brand.oatmeal,
+                          color: AppColors.oatmeal,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Icon(
@@ -46,7 +42,7 @@ class SkillsSection extends StatelessWidget {
                             Icons.cloud_sync_outlined,
                             Icons.code_rounded,
                           ][index],
-                          color: Brand.deepMustard,
+                          color: AppColors.deepMustard,
                         ),
                       ),
                       Text(s.title, style: AppFonts.display(size: 25)),
@@ -54,7 +50,10 @@ class SkillsSection extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           s.description!,
-                          style: AppFonts.body(size: 14, color: Brand.muted),
+                          style: AppFonts.body(
+                            size: 14,
+                            color: AppColors.muted,
+                          ),
                         ),
                       ],
                       if (s.tags.isNotEmpty) ...[

@@ -7,7 +7,8 @@ class PortfolioProject {
   final List<String> tags;
 
   final List<String> images;
-  final String? url;
+  final String? githubUrl;
+  final String? customUrl;
   final bool portfolioOnly;
 
   const PortfolioProject({
@@ -18,12 +19,14 @@ class PortfolioProject {
     this.description,
     this.tags = const [],
     this.images = const [],
-    this.url,
+    this.githubUrl,
+    this.customUrl,
     this.portfolioOnly = false,
   });
 
   bool get hasImages => images.isNotEmpty;
-  bool get hasUrl => url != null && url!.isNotEmpty;
+  bool get hasGithubUrl => githubUrl != null && githubUrl!.isNotEmpty;
+  bool get hasCustomUrl => customUrl != null && customUrl!.isNotEmpty;
 
   factory PortfolioProject.fromJson(Map<String, dynamic> json) {
     return PortfolioProject(
@@ -35,7 +38,8 @@ class PortfolioProject {
       tags: (json['tags'] as List?)?.whereType<String>().toList() ?? const [],
       images:
           (json['images'] as List?)?.whereType<String>().toList() ?? const [],
-      url: json['url'] as String?,
+      githubUrl: json['githubUrl'] as String? ?? json['url'] as String?,
+      customUrl: json['customUrl'] as String?,
       portfolioOnly: json['portfolioOnly'] as bool? ?? false,
     );
   }
@@ -48,7 +52,8 @@ class PortfolioProject {
     'description': description,
     'tags': tags,
     'images': images,
-    'url': url,
+    'githubUrl': githubUrl,
+    'customUrl': customUrl,
     'portfolioOnly': portfolioOnly,
   };
 
@@ -60,7 +65,8 @@ class PortfolioProject {
     String? description,
     List<String>? tags,
     List<String>? images,
-    String? url,
+    String? githubUrl,
+    String? customUrl,
     bool? portfolioOnly,
   }) {
     return PortfolioProject(
@@ -71,7 +77,8 @@ class PortfolioProject {
       description: description ?? this.description,
       tags: tags ?? this.tags,
       images: images ?? this.images,
-      url: url ?? this.url,
+      githubUrl: githubUrl ?? this.githubUrl,
+      customUrl: customUrl ?? this.customUrl,
       portfolioOnly: portfolioOnly ?? this.portfolioOnly,
     );
   }

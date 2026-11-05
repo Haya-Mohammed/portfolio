@@ -1,7 +1,6 @@
 import 'package:my_portfolio/models/project.dart';
 
 const kProjects = <PortfolioProject>[
-  // Keep the cover first; an empty list displays the existing text card.
   PortfolioProject(
     id: 'superfit',
     title: 'SuperFit',
@@ -53,6 +52,8 @@ const kProjects = <PortfolioProject>[
       'assets/projects/mahalli-3.png',
       'assets/projects/mahalli-4.png',
     ],
+    customUrl: 'https://github.com/Haya-Mohammed/mahalli/releases/tag/mahalli-v1.0.0',
+    githubUrl: 'https://github.com/Haya-Mohammed/mahalli',
   ),
   PortfolioProject(
     id: 'mira',
@@ -96,7 +97,7 @@ const kProjects = <PortfolioProject>[
     summary: 'A simple, offline place to create and organize notes.',
     description: 'Local notes app with create, read, update, and delete flows using Hive and MVVM.',
     tags: ['Flutter', 'Hive', 'MVVM'],
-    url: 'https://github.com/Haya-Mohammed/my_notes',
+    githubUrl: 'https://github.com/Haya-Mohammed/my_notes',
     images: ['assets/projects/6.jpg'],
   ),
   PortfolioProject(
@@ -105,7 +106,7 @@ const kProjects = <PortfolioProject>[
     summary: 'Browse books and explore details backed by a REST API.',
     description: 'E-book browsing and detail screens backed by a REST API and local storage.',
     tags: ['Flutter', 'REST API', 'Hive', 'Clean Architecture'],
-    url: 'https://github.com/Haya-Mohammed/bookly_app',
+    githubUrl: 'https://github.com/Haya-Mohammed/bookly_app',
     images: ['assets/projects/7.jpg'],
   ),
   PortfolioProject(
@@ -115,7 +116,7 @@ const kProjects = <PortfolioProject>[
     description:
         'Category-based news browsing powered by NewsAPI, with article sharing. Built with MVVM and BLoC/Cubit, cached images, Hive storage for articles, a dark theme that persists between sessions, and a native splash screen and app icon.',
     tags: ['Flutter', 'REST API', 'BLoC/Cubit', 'MVVM', 'Hive', 'Shared Preferences'],
-    url: 'https://github.com/Haya-Mohammed/alhayaa_news_app',
+    githubUrl: 'https://github.com/Haya-Mohammed/alhayaa_news_app',
     images: ['assets/projects/3.jpg'],
   ),
   PortfolioProject(
@@ -125,7 +126,7 @@ const kProjects = <PortfolioProject>[
     description: 'Recipe organizer with offline local storage.',
     tags: ['Flutter', 'Cubit', 'Hive'],
     portfolioOnly: true,
-    url: 'https://github.com/Haya-Mohammed/my_cookbook',
+    githubUrl: 'https://github.com/Haya-Mohammed/my_cookbook',
     images: ['assets/projects/4.jpg'],
   ),
   PortfolioProject(
@@ -137,13 +138,5 @@ const kProjects = <PortfolioProject>[
     tags: ['Flutter', 'Responsive UI', 'Firebase'],
     portfolioOnly: true,
     images: ['assets/projects/2.jpg'],
-  ),
-  PortfolioProject(
-    id: 'pizza-delivery-app',
-    title: 'Pizza Delivery App',
-    summary: 'A food shopping flow for browsing pizzas and viewing details.',
-    description: 'Shopping interface for browsing pizzas and viewing product details.',
-    tags: ['Flutter', 'GetX', 'REST API'],
-    portfolioOnly: true,
   ),
 ];
