@@ -2,6 +2,36 @@ import 'package:my_portfolio/models/project.dart';
 
 const kProjects = <PortfolioProject>[
   PortfolioProject(
+    id: 'lamha',
+    title: 'Lamha — Smart Shopping, Local Delivery',
+    summary:
+        'An AI-powered multi-store shopping and delivery platform connecting customers with nearby local businesses through seamless shopping and delivery experiences.',
+    contribution: 'Customer & Driver Mobile App Development, Flutter/Dart & API Integration',
+    description:
+        'Lamha is an AI-powered multi-store shopping and delivery platform designed to simplify everyday shopping by connecting customers with nearby local stores through a single application.\n\n'
+        'The customer app enables users to discover nearby stores, browse products, manage shopping carts, and place orders. It features an intelligent shopping assistant powered by Google Gemini AI, helping users discover products and create shopping lists through natural language conversations.\n\n'
+        'The dedicated driver app streamlines delivery operations with order management, delivery navigation, live order tracking, notifications, and earnings monitoring.\n\n'
+        'The mobile applications are built using Flutter and Dart, integrated with a Node.js/Express backend and PostgreSQL database. Google Gemini API powers the AI shopping assistant, while OpenStreetMap and Leaflet support location-based services and delivery tracking.\n\n'
+        'Our Role: Customer and Driver Mobile Application Development, including UI implementation, backend API integration, AI feature integration, and shopping and delivery workflows.',
+    tags: [
+      'Flutter',
+      'Dart',
+      'Node.js',
+      'Express.js',
+      'PostgreSQL',
+      'Gemini AI',
+      'OpenStreetMap',
+      'Leaflet',
+      'REST API Integration',
+    ],
+    images: [
+      'assets/projects/lamha-1.png',
+      'assets/projects/lamha-2.png',
+      'assets/projects/lamha-3.png',
+      'assets/projects/lamha-4.png',
+    ],
+  ),
+  PortfolioProject(
     id: 'superfit',
     title: 'SuperFit',
     summary:
